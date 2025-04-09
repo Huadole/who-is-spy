@@ -2,6 +2,492 @@
 <html lang="zh-tw">
 <head>
 <meta charset="UTF-8">
-<title>!!ES 誰是臥底 ES!!</title>
+<title>!! ES 誰是臥底 ES !!</title>
+<style>
+  table, th, td {
+    border: 1px solid black;
+    border-collapse: separate;
+    border-spacing: 7px;
+  }
+  th, td {
+    padding: 20px;
+    text-align: center;
+	height: 20px;
+	width: 35px;
+  }
+  .color-lump {
+    width: 80px;
+    height: 40px;
+  }
+  .img-row {
+    width: 300px;
+    height: 375px;
+  }
+  button {
+    width: 120px;
+    height: 40px;
+  }
+</style>
+</head>
+<body>
+	<center>
+		<div class="color-lump" id="lead"></div>
+		<table>
+			<tr>
+				<td><div id="table-container_0"></div></td>
+				<td><div id="table-container_1"></div></td>
+				<td><div id="table-container_2"></div></td>
+			</tr>
+			<tr>
+				<td>
+				<div>
+					<button id="regen" onclick="Init()">Re-gen</button>
+					<button id="get_ans1" onclick="SwapDebugMode()">User1 Answer</button><br>
+					<button id="mode_set" onclick="ChangeMode()">Mode</button>
+					<button id="get_ans2" onclick="SortRank()">User2 Answer</button><br><br>
+					<text id="mode_text"></text>
+					<text id="debug_str"></text>
+				</div>
+				</td>
+				<td>
+					<text>User1 Answer</text>
+					<div id="ans1"></div>
+				</td>
+				<td>
+					<text>User2 Answer</text>
+					<div id="ans2"></div>
+				</td>
+			</tr>
+		</table>
+		<script>
+		
+
+		
+		var rank_mapping_table = [];
+		var doneRank = 0;
+		var RankingGroup = 0;
+		var curr_ranking_num = 0;
+		var ranking_cnt = 0;
+		var curr_level = 0;
+		var user_score_ee = 0;
+		var user_score_hua = 0;
+		var debug_str = "", debug_str2 = "";
+		let cnt, count, random_idx=0;
+		const tier_max = 3;
+		const done_max = 3;
+		
+		var idCounter = 1;         // Default=1~24, Usser1=25~48, User2=49~72
+		var mode = 2;              // Set as default Mode=0
+		var mode_num = 3;
+		var round_row = 4;
+		var round_col = 6;
+		var total_img_num = 54;
+		var used_img_num = 0;
+		var user1_img = [];
+		var user2_img = [];
+		var path_container = [];
+		var index_mapping_table = [];
+		
+		function createTable(idx) 
+		{
+			if (idx == 0) var container = document.getElementById('table-container_0');
+			else if (idx == 1) var container = document.getElementById('table-container_1');
+			else if (idx == 2) var container = document.getElementById('table-container_2');
+			var table = document.createElement('table');
+
+			for (var i = 0; i < round_col; i++) 
+			{
+				var tr = document.createElement('tr');
+				for (var j = 0; j < round_row; j++) 
+				{
+					var td = document.createElement('td');
+					td.id = idCounter;  // 設定每個單元格的 ID
+					//td.textContent = idCounter;  // 顯示 ID 編號
+					var img = document.createElement('img');
+					td.appendChild(img);
+					tr.appendChild(td);
+					idCounter++;
+				}
+				table.appendChild(tr);
+			}
+
+			container.appendChild(table);
+		}
+
+		function InsertImg(idx) 
+		{
+			if (idx == 0) var container = document.getElementById('table-container_0');
+			else if (idx == 1) var container = document.getElementById('table-container_1');
+			else if (idx == 2) var container = document.getElementById('table-container_2');
+
+			if (idx == 0) var target_arr = path_container;
+			else if (idx == 1) var target_arr = user1_img;
+			else if (idx == 2) var target_arr = user2_img;
+			
+			var idCounter = 1;
+
+			for (cnt = 0; cnt < (round_row*round_col) ; cnt++) 
+			{
+				var table_block = document.getElementById(((cnt+1)+(idx*(round_row*round_col))));
+				table_block.src = target_arr[cnt];
+				table_block.width = 140;
+				table_block.height = 140;
+			}
+		}
+		
+		function ChangeMode()
+		{
+			var mode_str = "";
+			
+			mode = (mode+1)%mode_num;
+			
+			// Update mode string
+			mode_str += "Mode = " + String(mode+1);
+			if (mode == 0) mode_str += " (ES!)<br>";
+			else if (mode == 1) mode_str += " (ES! + ES!!一周目)<br>";
+			else if (mode == 2) mode_str += " (ES! + ES!!一周目+二周目)<br>";
+			
+			// Update used image num
+			if (mode == 0) used_img_num = 41;
+			else if (mode == 1) used_img_num = 49;
+			else if (mode == 2) used_img_num = 54;
+			
+			document.getElementById("mode_text").innerHTML = mode_str;
+			Init();
+		}		
+		
+		// Set initial info of image
+		/*function Img(index)
+		{
+			this.img_name = index;
+			this.is_random = false;
+			this.user1_set = false;
+			this.user2_set = false;
+		}*/
+		
+		// Generate image path
+		function getImagePath() 
+		{	
+			for (cnt = 1; cnt <= total_img_num ; cnt ++)
+			{
+				path_container.push("./images/"+String(cnt)+".jpg");
+				//testImg.push(new Img(cnt));
+			}
+		}
+		
+		// Get random set 
+		function Init()
+		{	
+			// Initial 
+			user1_img = [];
+			user2_img = [];
+			
+			// Random order of images
+			path_container.sort(() => Math.random() - Math.random());
+			user1_img = path_container.slice(0, (round_row*round_col));
+			user2_img = path_container.slice(0, (round_row*round_col));
+			user1_img.sort(() => Math.random() - Math.random());
+			user2_img.sort(() => Math.random() - Math.random());
+			
+			InsertImg(0);
+			InsertImg(1);
+			InsertImg(2);
+			
+			/*debug_str = String(used_img_num) + ") " + String(mode) + ") :";
+			for (cnt = 0; cnt < user1_img.length ; cnt ++)
+			{
+				debug_str += user1_img[cnt] + ", ";
+			}
+			debug_str += "<br><br>";
+			for (cnt = 0; cnt < user2_img.length ; cnt ++)
+			{
+				debug_str += user2_img[cnt] + ", ";
+			}
+			debug_str += "<br><br>";
+			document.getElementById("debug_str").innerHTML = debug_str;*/
+			
+			// Initial image setting
+			/*ranking_cnt = 0;
+			curr_ranking_num = testImg.length;
+			RankingGroup = Math.floor(testImg.length/2);
+			document.getElementById("img_1").src = path_container[index_mapping_table[ranking_cnt]];
+			document.getElementById("img_2").src = path_container[index_mapping_table[ranking_cnt+1]];
+			document.getElementById("img_1").alt = path_container[index_mapping_table[ranking_cnt]];
+			document.getElementById("img_2").alt = path_container[index_mapping_table[ranking_cnt+1]];
+			//document.getElementById("result_ee").innerHTML = path_container[index_mapping_table[0]];
+			//document.getElementById("result_hua").innerHTML = path_container[index_mapping_table[1]];
+
+			// Initialization triggered by button
+			if (scenario != 0)
+			{
+				for (cnt = 0; cnt < path_container.length ; cnt ++) testImg.pop();
+				setScore();
+				curr_level = 0;
+			}
+			
+			debug_ranking();*/
+		}
+		
+		createTable(0);
+		createTable(1);
+		createTable(2);
+		ChangeMode();
+
+		getImagePath();
+		Init();		
+				
+		
+
+
+
+			
+		/*function debug_ranking()
+		{
+			debug_str = "";
+			
+			debug_str += "RankingGroup = " + String(RankingGroup) + "<br>";
+			debug_str += "ranking_num  = " + String(curr_ranking_num) + "<br>";
+			debug_str += "ranking_cnt  = " + String(ranking_cnt) + "<br>";
+			debug_str += "doneRank     = " + String(doneRank) + "<br>";
+			debug_str += "curr_level   = " + String(curr_level) + "<br>";
+			debug_str += "item_num     = " + String(testImg.length) + "<br>";
+			for (cnt=0 ; cnt<testImg.length ; cnt ++)
+			{
+				debug_str += String(cnt) + "(m=" + String(index_mapping_table[cnt]) +"): " + testImg[cnt].score 
+				          + ", T" + String(testImg[cnt].tier) + ",R" + String(testImg[cnt].rank)
+ 					  + " (E=" + String(testImg[cnt].EE_rank) + ", H=" + String(testImg[cnt].Hua_rank) + ")<br>";
+			}
+			
+			if (debug_en == true) document.getElementById("debug_info").innerHTML = debug_str;
+			else document.getElementById("debug_info").innerHTML = "";
+		}
+		
+		function debug_result()
+		{
+			debug_str2 = "";
+			for (cnt=0 ; cnt<testImg.length ; cnt ++) debug_str2 += "Rank" + String(cnt) + ": " + String(rank_mapping_table[cnt]) + "<br>";
+			
+			if (debug_en == true) document.getElementById("debug_rank").innerHTML = debug_str2;
+			else document.getElementById("debug_rank").innerHTML = "";
+		}
+
+		function SortRank()
+		{
+			var temp_list = [];
+			var max = 0;
+			var tier_num, tier_cnt, counter;
+			
+			count = 0;
+			rank_mapping_table = [];
+			
+			// Sort according to Rank (increasing)
+			for (cnt = 0 ; cnt < testImg.length ; cnt ++)
+			{
+				// Reset is_ranking for sorting usage
+				testImg[cnt].is_ranking = false;
+				
+				// Store index in rank_mapping_table by rank
+				if (testImg[cnt].rank != 0)
+				{
+					rank_mapping_table[(testImg[cnt].rank-1)] = cnt;
+					testImg[cnt].is_ranking = true;
+					count++;
+				}
+			}
+			
+			// Sort according to Tier (decreasing)
+			for (tier_cnt = (tier_max-1) ; tier_cnt >= 0 ; tier_cnt --)
+			{
+				temp_list = [];
+				for (cnt = 0 ; cnt < testImg.length ; cnt ++)
+				{
+					if (testImg[cnt].tier == tier_cnt) temp_list.push(cnt);
+				}
+				
+				// Sort according to Score (decreasing)
+				tier_num = temp_list.length;
+				if (tier_num > 0)
+				{
+					for (cnt = 0 ; cnt < tier_num ; cnt++)
+					{
+						for (counter = 0, max = 0 ; counter < temp_list.length; counter ++)
+						{
+							if (testImg[temp_list[max]].score < testImg[temp_list[counter]].score) max = counter;
+						}
+						rank_mapping_table[count] = temp_list[max];
+						count++;
+						temp_list.splice(max,1);
+					}
+				}
+			}
+			debug_result();
+		}
+		
+		function Scoring(scenario)
+		{
+			let ee_d_score = 0, hua_d_score = 0;
+			for (cnt = 0, user_score_ee = 0, user_score_hua = 0 ; cnt < testImg.length ; cnt ++)
+			{
+				// Default score of EE and Hua
+				user_score_ee += Math.pow(testImg[cnt].EE_rank, 2);
+				user_score_hua += Math.pow(testImg[cnt].Hua_rank, 2);
+			}
+			
+			ee_d_score = user_score_ee;
+			hua_d_score = user_score_hua;
+			for (cnt = 0 ; cnt < testImg.length ; cnt ++)
+			{
+				// Calculate 2 kinds of score
+				user_score_ee -= (Math.abs(testImg[rank_mapping_table[cnt]].EE_rank - cnt) * (testImg.length + 1 - testImg[rank_mapping_table[cnt]].EE_rank));
+				user_score_hua -= (Math.abs(testImg[rank_mapping_table[cnt]].Hua_rank - cnt) * (testImg.length + 1 - testImg[rank_mapping_table[cnt]].Hua_rank));
+			}
+
+			if((debug_en == true) || (scenario == 0))
+			{
+				document.getElementById("result_ee").innerHTML = "EE Score=" + String(user_score_ee) + "/" + String(ee_d_score) + " (" + ((user_score_ee/ee_d_score)*100).toFixed(2) + "%)<br>";
+				document.getElementById("result_hua").innerHTML = "Hua Score=" + String(user_score_hua) + "/" + String(hua_d_score) + " (" + ((user_score_hua/hua_d_score)*100).toFixed(2) + "%)<br>";
+			}
+			else
+			{
+				document.getElementById("result_ee").innerHTML = "";
+				document.getElementById("result_hua").innerHTML = "";	
+			}
+		}
+		
+		setScore();
+
+		
+		function Ranking(scenario)
+		{
+			function SetNextLevelRanking()
+			{
+				let temp_list = []; 
+				curr_level++;
+				
+				// Update index_mapping_table
+				for (cnt = 0, count = 0 ; cnt<index_mapping_table.length ; cnt ++)
+				{
+					if (testImg[index_mapping_table[cnt]].is_ranking == true)
+					{
+						temp_list.push(index_mapping_table[cnt]);
+						count++;
+					}
+				}
+				index_mapping_table = temp_list;
+				
+				// Reset is_ranking status in index_mapping_table
+				for (cnt = 0 ; cnt<testImg.length ; cnt ++) testImg[cnt].is_ranking = false;
+				
+				ranking_cnt = 0;
+				curr_ranking_num = count;
+				RankingGroup = Math.floor(count/2);
+			}
+			
+			function SetNextRoundRanking(last_idx)
+			{
+				for (cnt = 0 ; cnt < testImg.length ; cnt ++)
+				{
+					testImg[cnt].is_random = false;
+					testImg[cnt].is_ranking = false;
+				}
+				for (cnt = 0 ; cnt < (testImg.length - doneRank) ; cnt ++)
+				{
+					// Reset index_mapping_table without done Ranking image 
+					random_idx = Math.floor(Math.random() * path_container.length);
+					if((random_idx == last_idx) && (testImg[random_idx].is_random == false))
+					{
+						index_mapping_table[cnt] = random_idx;
+						testImg[random_idx].tier++;
+						testImg[random_idx].is_random = true;
+					}
+					else if (testImg[random_idx].rank != 0)
+					{
+						cnt--;
+					}
+					else if (testImg[random_idx].is_random == false)
+					{
+						index_mapping_table[cnt] = random_idx;
+						testImg[random_idx].is_random = true;
+					}
+					else cnt--;
+					
+					// Done ranking if tier become 3
+					if ((testImg[random_idx].tier == tier_max) && (testImg[random_idx].rank == 0))
+					{
+						doneRank++;
+						testImg[random_idx].rank = doneRank;
+						cnt--;
+					}
+				}
+			
+				ranking_cnt = 0;
+				curr_ranking_num = testImg.length-doneRank;
+				RankingGroup = Math.floor((testImg.length-doneRank)/2);
+			}
+			
+			// Ranking with score
+			var curr_index = testImg.length;
+			if (scenario == 0)
+			{
+				curr_index = index_mapping_table[ranking_cnt];
+				testImg[index_mapping_table[ranking_cnt]].score++;
+				testImg[index_mapping_table[ranking_cnt]].is_ranking = true;
+			}
+			else if (scenario == 1)
+			{
+				curr_index = index_mapping_table[ranking_cnt+1];
+				testImg[index_mapping_table[ranking_cnt+1]].score++;
+				testImg[index_mapping_table[ranking_cnt+1]].is_ranking = true;
+			}
+			else
+			{
+				// TBD: Error handling
+			}
+			
+			ranking_cnt+=2;
+			
+			// Handling single image left
+			if ((ranking_cnt+1) == curr_ranking_num)
+			{
+				testImg[index_mapping_table[ranking_cnt]].is_ranking = true;
+				ranking_cnt++;
+			}
+			debug_ranking();
+			
+			// NextRound or NextLevel
+			if (curr_ranking_num == 2) // Round ranking done (update tier for last choosed image)
+			{
+				curr_level++;
+				SetNextRoundRanking(curr_index);
+			}
+			else if (ranking_cnt == curr_ranking_num) // Level ranking done
+			{
+				SetNextLevelRanking();
+			}
+			
+			// Final Rank of user
+			if (doneRank == done_max)
+			{
+				SortRank();
+				Scoring(0);
+			}
+			else
+			{
+				// Show next 2 images
+				document.getElementById("img_1").src = path_container[index_mapping_table[ranking_cnt]];
+				document.getElementById("img_2").src = path_container[index_mapping_table[ranking_cnt+1]];
+				document.getElementById("img_1").alt = path_container[index_mapping_table[ranking_cnt]];
+				document.getElementById("img_2").alt = path_container[index_mapping_table[ranking_cnt+1]];
+				//document.getElementById("result_ee").innerHTML = path_container[index_mapping_table[ranking_cnt]];
+				//document.getElementById("result_hua").innerHTML = path_container[index_mapping_table[ranking_cnt+1]];
+			}
+			
+			// Debug info
+			debug_ranking();
+		}*/
+		
+		</script>
+
+	</center>
 </body>
 </html>
