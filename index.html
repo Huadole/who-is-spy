@@ -212,11 +212,12 @@
 	
 		function Show_MyTable(idx)
 		{
-			var curr_url = "";//location.hostname + location.pathname;
-			var next_url = curr_url + "?user=" + String(idx) + "&l_idx=" + String(deck_index_l) + "&h_idx=" + String(deck_index_h);
-
-			if ((deck_index_l != 0) && (deck_index_h != 0))
+			if ((deck_index_l == 0) && (deck_index_h == 0)){}
+			else
 			{
+				var curr_url = "";//location.hostname + location.pathname;
+				var next_url = curr_url + "?user=" + String(idx) + "&l_idx=" + String(deck_index_l) + "&h_idx=" + String(deck_index_h);
+
 				NextPage(next_url);
 			}
 		}
@@ -377,6 +378,11 @@
 				GetAns(0);  // Get answer in MyTable container
 				RamdomDeck(user_id, deck_index_l, deck_index_h);
 				InsertImg(0);
+			}
+			else
+			{
+				deck_index_l = 0;
+				deck_index_h = 0;
 			}
 			
 			//debug_str += "UserID=" + user_id + ", LID=" + deck_index_l + ", HID=" + deck_index_h + "<br>";
