@@ -19,42 +19,57 @@
     width: 80px;
     height: 40px;
   }
-  .img-row {
-    width: 300px;
-    height: 375px;
+  img {
+    width: 70px;
+    height: 70px;
   }
   button {
-    width: 120px;
-    height: 40px;
+    width: 80px;
+    height: 30px;
   }
 </style>
 </head>
 <body>
 	<center>
-		<div class="color-lump" id="lead"></div>
 		<table>
 			<tr>
-				<td><div id="table-container_0">牌庫</div></td>
-				<td><div id="table-container_1">User1</div></td>
-				<td><div id="table-container_2">User2</div></td>
+				<td colspan="2">
+					<text id="mode_text"></text><br>
+					<button id="start" onclick="Init(false)">Start</button>
+					<button id="imuser1" onclick="Show_MyTable(1)">User1</button>
+					<!--<button id="dbguser1" onclick="Show_User(1)">Debug1</button>-->
+					<br>
+					<button id="mode_set" onclick="ChangeMode()">Mode</button>
+					<button id="imuser2" onclick="Show_MyTable(2)">User2</button>
+					<!--<button id="dbguser2" onclick="Show_User(2)">Debug2</button>-->
+					<br><br>
+				</td>
+				<td colspan="2">
+				</td>
+			</tr>
+			<tr>
+				<td><div id="table-container_0"></div></td><!--總牌庫-->
+				<td><div id="table-container_my"></div></td><!--我的牌庫-->
+				<td><div id="table-container_1"></div></td><!--User1-->
+				<td><div id="table-container_2"></div></td><!--User2-->
 			</tr>
 			<tr>
 				<td>
 				<div>
-					<button id="regen" onclick="Init()">Re-gen</button>
-					<button id="get_ans1" onclick="Show_User(1)">User1</button><br>
-					<button id="mode_set" onclick="ChangeMode()">Mode</button>
-					<button id="get_ans2" onclick="Show_User(2)">User2</button><br><br>
-					<text id="mode_text"></text>
 					<text id="debug_str"></text>
 				</div>
 				</td>
 				<td>
-					<text>User2 Answer</text>
+				<div>
+					<text id="mytable_ans"></text><!--對手答案-->
+					<div id="ans2"><img id="img_ans0"></img></div>
+				</div>
+				<td>
+					<text id="user1_ans"></text><!--User2 Answer-->
 					<div id="ans2"><img id="img_ans1"></img></div>
 				</td>
 				<td>
-					<text>User1 Answer</text>
+					<text id="user2_ans"></text><!--User1 Answer-->
 					<div id="ans1"><img id="img_ans2"></img></div>
 				</td>
 			</tr>
@@ -73,23 +88,30 @@
 		var used_img_num = 0;
 		var user1_img = [];
 		var user2_img = [];
-		var user_show_en = [false, false];
-		var user_ans_img_idx = [0, 0];
+		var myTable_img = [];
+		var user_show_en = [false, false, false]; // MyTable, User1, User2
+		var user_ans_img_idx = [0, 0, 0];         // MyTable, User1, User2
 		var path_container = [];
 		var sub_path = [];
-		var img_size = 70;
-		let cnt;
+		var user_id = 0;
+		var deck_index_l = 0;
+		var deck_index_h = 0;
+		let cnt, count;
 		var debug_str = "";
-		
 		
 		
 		
 		function createTable(idx) 
 		{
-			if (idx == 0) var container = document.getElementById('table-container_0');
+			if (idx == 0) var container = document.getElementById('table-container_my');
 			else if (idx == 1) var container = document.getElementById('table-container_1');
 			else if (idx == 2) var container = document.getElementById('table-container_2');
+			else if (idx == 3) var container = document.getElementById('table-container_0');
 			var table = document.createElement('table');
+
+			var text = document.createElement('text');
+			text.id = "table-title_" + String(idx);
+			container.appendChild(text);
 
 			for (var i = 0; i < round_col; i++) 
 			{
@@ -100,10 +122,10 @@
 					td.id = idCounter;  // 設定每個單元格的 ID
 					//td.textContent = idCounter;  // 顯示 ID 編號
 					var img = document.createElement('img');
-					img.id = "img"+String(idCounter);
+					img.id = "img" + String(idCounter);
 					td.appendChild(img);
 					tr.appendChild(td);
-					idCounter++;
+					idCounter ++;
 				}
 				table.appendChild(tr);
 			}
@@ -113,9 +135,15 @@
 
 		function InsertImg(idx) 
 		{	
-			if (idx == 0) var target_arr = sub_path;
+			if (idx == 0) var target_arr = myTable_img;
 			else if (idx == 1) var target_arr = user1_img;
 			else if (idx == 2) var target_arr = user2_img;
+			else if (idx == 3) var target_arr = sub_path;
+			
+			if (idx == 0) document.getElementById("table-title_0").textContent = "我的牌庫";
+			else if (idx == 1) document.getElementById("table-title_1").textContent = "User1";
+			else if (idx == 2) document.getElementById("table-title_2").textContent = "User2";
+			else if (idx == 3) document.getElementById("table-title_3").textContent = "總牌庫";
 
 			for (cnt = 0; cnt < (round_row*round_col) ; cnt++) 
 			{
@@ -124,23 +152,24 @@
 				//document.getElementById("debug_str").innerHTML = debug_str;
 				
 				var table_block = document.getElementById(img_id_str);
-				//table_block.textContent = target_arr[cnt];
+				table_block.textContent = target_arr[cnt];
 				table_block.src = target_arr[cnt];
-				table_block.width = img_size;
-				table_block.height = img_size;
 			}
 			//debug_str += "<br>";
 			//document.getElementById("debug_str").innerHTML = debug_str;
 			
-			if (idx != 0)
+			// For Answer image
+			if (idx < 3)
 			{
-				var ans_idx = user_ans_img_idx[idx-1];
+				if (idx == 0) document.getElementById("mytable_ans").textContent = "對手答案";
+				else if (idx == 1) document.getElementById("user1_ans").textContent = "User2 Answer";
+				else if (idx == 2) document.getElementById("user2_ans").textContent = "User1 Answer";
+			
+				var ans_idx = user_ans_img_idx[idx];
 				img_id_str = "img_ans" + String(idx);
 				
 				var ans_block = document.getElementById(img_id_str);
 				ans_block.src = target_arr[ans_idx];
-				ans_block.width = img_size;
-				ans_block.height = img_size;
 			}
 		}
 		
@@ -155,37 +184,56 @@
 				var table_block = document.getElementById(img_id_str);
 				//table_block.textContent = target_arr[cnt];
 				table_block.src = "";
-				table_block.width = img_size;
-				table_block.height = img_size;
 			}
 			//debug_str += "<br>";
 			//document.getElementById("debug_str").innerHTML = debug_str;
 			
-			if (idx != 0)
+			// For Answer image
+			if (idx < 3)
 			{
-				var ans_idx = user_ans_img_idx[idx-1];
+				if (idx == 0) document.getElementById("mytable_ans").textContent = "";
+				else if (idx == 1) document.getElementById("user1_ans").textContent = "";
+				else if (idx == 2) document.getElementById("user2_ans").textContent = "";
+			
+				var ans_idx = user_ans_img_idx[idx];
 				img_id_str = "img_ans" + String(idx);
 				
 				var ans_block = document.getElementById(img_id_str);
 				ans_block.src = "";
-				ans_block.width = img_size;
-				ans_block.height = img_size;
 			}
 		}
-		
+
+		function NextPage(url)
+		{
+			//debug_str += url + "<br>";
+			//document.getElementById("debug_str").innerHTML = debug_str;
+			window.location.href = url;
+		}
+	
+		function Show_MyTable(idx)
+		{
+			var curr_url = location.hostname + location.pathname;
+			var next_url = curr_url + "?user=" + String(idx) + "&l_idx=" + String(deck_index_l) + "&h_idx=" + String(deck_index_h);
+
+			if ((deck_index_l != 0) && (deck_index_h != 0))
+			{
+				NextPage(next_url);
+			}
+		}
+	
 		function Show_User(idx)
 		{
-			var flag = user_show_en[idx-1]; // idx=0 is user1, idx=1 is user2
+			var flag = user_show_en[idx]; // [0]=my, [1]=user1, [2]=user2
 			
 			if (flag == false)
 			{
 				InsertImg(idx);
-				user_show_en[idx-1] = true;
+				user_show_en[idx] = true;
 			}
 			else
 			{
 				UnImg(idx);
-				user_show_en[idx-1] = false;
+				user_show_en[idx] = false;
 			}
 		}
 		
@@ -195,20 +243,19 @@
 			
 			mode = (mode+1)%mode_num;
 			
-			// Update mode string
-			mode_str += "Mode = " + String(mode+1);
-			if (mode == 0) mode_str += " (ES!)<br>";
-			else if (mode == 1) mode_str += " (ES! + ES!!一周目)<br>";
-			else if (mode == 2) mode_str += " (ES! + ES!!一周目+二周目)<br>";
-			
 			// Update used image num
 			if (mode == 0) used_img_num = 41;
 			else if (mode == 1) used_img_num = 49;
 			else if (mode == 2) used_img_num = 54;
 			
-			mode_str += "Total num = " + String(used_img_num);
+			// Update mode string
+			mode_str += "[" + String(used_img_num) + "] Mode = " + String(mode+1);
+			if (mode == 0) mode_str += " (ES!)<br>";
+			else if (mode == 1) mode_str += " (ES! + ES!!一周目)<br>";
+			else if (mode == 2) mode_str += " (ES! + ES!!一周目+二周目)<br>";
+			
 			document.getElementById("mode_text").innerHTML = mode_str;
-			Init();
+			Init(true);
 		}		
 
 		// Generate image path
@@ -225,43 +272,125 @@
 			if (idx != 0)
 			{
 				// Get random index (0~24)
-				user_ans_img_idx[idx-1] = Math.floor(Math.random() * (round_row*round_col));
+				user_ans_img_idx[idx] = Math.floor(Math.random() * (round_row*round_col));
+				//user_ans_img_idx[idx-1] = Math.floor(Math.random() * (round_row*round_col));
 			}
 		}
 		
-		// Get random set 
-		function Init()
+		function GetDeckIndex(arr)
+		{
+			var sub_arr = arr.slice(0, (round_row*round_col));
+			var id_mapping = [];
+			var path_str = [];
+			var idx = [];
+			var get_idx = 0;
+			
+			//debug_str = "";
+			for (cnt = 0; cnt < (sub_arr.length); cnt ++)
+			{
+				path_str = sub_arr[cnt].split("/");
+				idx = path_str[2].split(".");    // [0]=. [1]=images [2]=XX.jpg
+				get_idx = idx[0];
+				
+				if (get_idx < 31) deck_index_l |= (1 << get_idx);
+				else if (get_idx >= 31) deck_index_h |= (1 << (get_idx-31));
+				//debug_str += get_idx + ")" + deck_index_h.toString(16) + ", " + deck_index_l.toString(16) + ", ";
+			}
+			//debug_str += String(deck_index_h) + " " + String(deck_index_l) + "<br>";
+			//document.getElementById("debug_str").innerHTML = debug_str;
+		}
+		
+		function RamdomDeck(user_id, l_idx, h_idx)
 		{	
+			var mask = 0;
+			var is_h_idx = 0;
+			
+			for (cnt = 0; myTable_img.length < (round_row*round_col) ; cnt ++)
+			{
+				if (cnt < 31) 
+				{
+					mask = l_idx;
+					is_h_idx = 0; 
+				}
+				else if (cnt >= 31) 
+				{
+					mask = h_idx;
+					is_h_idx = 1;
+				}
+				
+				// Add image path into array if bit of mask is 1
+				if (1 & (mask >> (cnt-(is_h_idx*31)))) myTable_img.push("./images/"+String(cnt)+".jpg");
+			}
+			
+			//if (user_id == 1) user1_img.sort(() => Math.random() - Math.random());
+			//else if (user_id == 2) user2_img.sort(() => Math.random() - Math.random());
+			myTable_img.sort(() => Math.random() - Math.random());
+		}
+		
+		// Get random set 
+		function Init(is_mode_chg)
+		{			
 			// Initial 
+			deck_index_l = 0;
+			deck_index_h = 0;
 			sub_path = [];
 			user1_img = [];
 			user2_img = [];
-			UnImg(1);
-			UnImg(2);
-			for (cnt = 0; cnt <= 2 ; cnt ++) user_show_en[cnt] = false;
-			for (cnt = 0; cnt <= 2 ; cnt ++) user_ans_img_idx[cnt] = 0;
-			
+			myTable = [];
+			//UnImg(1); // User1
+			//UnImg(2); // User2
+			for (cnt = 0; cnt < 3 ; cnt ++) user_show_en[cnt] = false;
+			for (cnt = 0; cnt < 3 ; cnt ++) user_ans_img_idx[cnt] = 0;
+					
 			// Random order of images
 			sub_path = path_container.slice(0, used_img_num);
 			sub_path.sort(() => Math.random() - Math.random());
-			user1_img = sub_path.slice(0, (round_row*round_col));
-			user2_img = sub_path.slice(0, (round_row*round_col));
-			user1_img.sort(() => Math.random() - Math.random());
-			user2_img.sort(() => Math.random() - Math.random());
+			//user1_img = sub_path.slice(0, (round_row*round_col));
+			//user2_img = sub_path.slice(0, (round_row*round_col));
+			//user1_img.sort(() => Math.random() - Math.random());
+			//user2_img.sort(() => Math.random() - Math.random());
 			
-			InsertImg(0);
-			GetAns(1);
-			GetAns(2);
+			if (is_mode_chg == false) InsertImg(3);
 			
+			GetDeckIndex(sub_path);
+		}
+		
+		function ParseParam ()
+		{
+			//var curr_url = location.href;
+			var raw_param = location.search.slice(1);
+			var param_w_type = raw_param.split("&");
+			var param = [];
+			
+			for (cnt = 0; cnt < param_w_type.length; cnt ++)
+			{
+				var element = param_w_type[cnt].split("=");
+				param.push(element[1]);
+			}
+			
+			user_id = param[0];
+			deck_index_l = param[1];
+			deck_index_h = param[2];
+			
+			if (raw_param != "")
+			{
+				GetAns(0);  // Get answer in MyTable container
+				RamdomDeck(user_id, deck_index_l, deck_index_h);
+				InsertImg(0);
+			}
+			
+			//debug_str += "UserID=" + user_id + ", LID=" + deck_index_l + ", HID=" + deck_index_h + "<br>";
+			//document.getElementById("debug_str").innerHTML = debug_str;
 		}
 		
 		createTable(0);
 		createTable(1);
 		createTable(2);
+		createTable(3);
 		ChangeMode();
 
 		getImagePath();
-		Init();		
+		ParseParam();		
 				
 		
 		</script>
