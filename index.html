@@ -212,7 +212,7 @@
 	
 		function Show_MyTable(idx)
 		{
-			var curr_url = location.hostname;// + location.pathname;
+			var curr_url = "";//location.hostname + location.pathname;
 			var next_url = curr_url + "?user=" + String(idx) + "&l_idx=" + String(deck_index_l) + "&h_idx=" + String(deck_index_h);
 
 			if ((deck_index_l != 0) && (deck_index_h != 0))
