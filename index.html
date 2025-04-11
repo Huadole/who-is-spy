@@ -104,6 +104,7 @@
 		var ans_idx_l = 0;
 		var ans_idx_h = 0;
 		let cnt, count;
+		var default_img_path = "./images/unknown.jpg";
 		var debug_str = "";
 		
 		
@@ -214,6 +215,7 @@
 				img_id_str = "img_ans" + String(idx);
 				var ans_block = document.getElementById(img_id_str);
 				ans_block.src = "./images/" + String(ans) + ".jpg";
+				ans_block.alt = "done";
 				
 				//debug_str = "";
 				//debug_str += String(ans) + " " + String(ans_num) + " " + String((ans_idx_l & 1)) + "<br>";
@@ -261,7 +263,7 @@
 				
 				var table_block = document.getElementById(img_id_str);
 				//table_block.textContent = target_arr[cnt];
-				table_block.src = "";
+				table_block.src = default_img_path;
 			}
 			//debug_str += "<br>";
 			//document.getElementById("debug_str").innerHTML = debug_str;
@@ -277,7 +279,7 @@
 				img_id_str = "img_ans" + String(idx);
 				
 				var ans_block = document.getElementById(img_id_str);
-				ans_block.src = "";
+				ans_block.src = default_img_path;
 			}
 		}
 
@@ -291,30 +293,15 @@
 		function Show_MyTable(idx)
 		{
 			if ((deck_index_l == 0) && (deck_index_h == 0)){}
+			else if (document.getElementById("img_ans3").alt != "start") {}
 			else
 			{
-				var curr_url = "";   //location.hostname + location.pathname;
+				var curr_url = ""; //location.hostname + location.pathname;
 				var next_url = curr_url + "?l_idx=" + String(deck_index_l) + "&h_idx=" + String(deck_index_h) 
 										+ "&al_idx=" + String(ans_idx_l*7) + "&ah_idx=" + String(ans_idx_h*7)
 										+ "&user=" + String(idx);
 
 				NextPage(next_url);
-			}
-		}
-	
-		function Show_User(idx)
-		{
-			var flag = user_show_en[idx]; // [0]=my, [1]=user1, [2]=user2
-			
-			if (flag == false)
-			{
-				InsertImg(idx);
-				user_show_en[idx] = true;
-			}
-			else
-			{
-				UnImg(idx);
-				user_show_en[idx] = false;
 			}
 		}
 		
@@ -474,8 +461,10 @@
 			if (is_mode_chg == false) 
 			{
 				InsertImg(3);
-				document.getElementById("my_ans").textContent = "";
-				document.getElementById("img_ans3").src = "./images/unknown.jpg";
+				document.getElementById("my_ans").textContent = "我的答案";
+				document.getElementById("img_ans3").src = default_img_path;
+				document.getElementById("img_ans3").alt = "start";
+				UnImg(0);
 			}
 			
 			GetAns(1);
@@ -507,6 +496,9 @@
 				//GetAns(0);  // Get answer in MyTable container
 				RamdomDeck(user_id, deck_index_l, deck_index_h);
 				InsertImg(0);
+				document.getElementById("my_ans").textContent = "我的答案";
+				document.getElementById("img_ans3").src = default_img_path;
+				document.getElementById("img_ans3").alt = "ongoing";
 			}
 			else
 			{
