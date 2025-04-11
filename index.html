@@ -270,9 +270,9 @@
 			else
 			{
 				var curr_url = ""; //location.hostname + location.pathname;
-				var next_url = curr_url + "?user=" + String(idx) 
-										+ "&l_idx=" + String(deck_index_l) + "&h_idx=" + String(deck_index_h) 
-										+ "&al_idx=" + String(ans_idx_l*7) + "&ah_idx=" + String(ans_idx_h*7);
+				var next_url = curr_url + "?l_idx=" + String(deck_index_l) + "&h_idx=" + String(deck_index_h) 
+										+ "&al_idx=" + String(ans_idx_l*7) + "&ah_idx=" + String(ans_idx_h*7)
+										+ "&user=" + String(idx);
 
 				NextPage(next_url);
 			}
@@ -472,11 +472,11 @@
 				param.push(element[1]);
 			}
 			
-			user_id = param[0];
-			deck_index_l = param[1];
-			deck_index_h = param[2];
-			ans_idx_l = parseInt(param[3])/7;   // Decoded by dividing 7
-			ans_idx_h = parseInt(param[4])/7;   // Decoded by dividing 7
+			deck_index_l = param[0];
+			deck_index_h = param[1];
+			ans_idx_l = parseInt(param[2])/7;   // Decoded by dividing 7
+			ans_idx_h = parseInt(param[3])/7;   // Decoded by dividing 7
+			user_id = param[4];
 			
 			if (raw_param != "")
 			{
