@@ -8,6 +8,10 @@
     border: 0px solid black;
     border-collapse: separate;
     border-spacing: 7px;
+	text-align: center;
+  }
+  .table_dyn {
+	display: flex;
   }
   th, td {
     padding: 2px;
@@ -46,14 +50,10 @@
 					<!--<button id="dbguser2" onclick="Show_User(2)">Debug2</button>-->
 					<br><br>
 				</td>
-				<td colspan="2">
-				</td>
 			</tr>
 			<tr>
 				<td><div id="table-container_0"></div></td><!--總牌庫-->
 				<td><div id="table-container_my"></div></td><!--我的牌庫-->
-				<td><div id="table-container_1"></div></td><!--User1-->
-				<td><div id="table-container_2"></div></td><!--User2-->
 			</tr>
 			<tr>
 				<td>
@@ -68,6 +68,17 @@
 					<text id="mytable_ans"></text><!--對手答案-->
 					<div id="ans2"><img id="img_ans0"></img></div>
 				</div>
+
+			</tr>
+			<tr>
+				<td colspan="2">
+				</td>
+			</tr>
+			<tr>
+				<td><div id="table-container_1"></div></td><!--User1-->
+				<td><div id="table-container_2"></div></td><!--User2-->
+			</tr>
+			<tr>
 				<td>
 					<text id="user1_ans"></text><!--User2 Answer-->
 					<div id="ans2"><!--<img id="img_ans1"></img>--></div>
@@ -75,7 +86,7 @@
 				<td>
 					<text id="user2_ans"></text><!--User1 Answer-->
 					<div id="ans1"><!--<img id="img_ans2"></img>--></div>
-				</td>
+				</td>				
 			</tr>
 		</table>
 		<script>
