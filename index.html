@@ -243,10 +243,10 @@
 			else if (idx == 2) var target_arr = user2_img;
 			else if (idx == 3) var target_arr = sub_path;
 			
-			if (idx == 0) document.getElementById("table-title_0").textContent = "我的牌庫";
+			if (idx == 0) document.getElementById("table-title_0").textContent = ""; //"我的牌庫";
 			else if (idx == 1) document.getElementById("table-title_1").textContent = "User1";
 			else if (idx == 2) document.getElementById("table-title_2").textContent = "User2";
-			else if (idx == 3) document.getElementById("table-title_3").textContent = "總牌庫";
+			else if (idx == 3) document.getElementById("table-title_3").textContent = "這輪的牌庫";
 
 			for (cnt = 0; cnt < (round_row*round_col) ; cnt++) 
 			{
@@ -284,7 +284,7 @@
 			// For Answer image
 			if (idx < 3)
 			{
-				if (idx == 0) document.getElementById("mytable_ans").textContent = "";
+				if (idx == 0) document.getElementById("mytable_ans").textContent = "( ˊᴗˋ )";
 				else if (idx == 1) document.getElementById("user1_ans").textContent = "";
 				else if (idx == 2) document.getElementById("user2_ans").textContent = "";
 			
@@ -293,6 +293,7 @@
 				
 				var ans_block = document.getElementById(img_id_str);
 				ans_block.src = default_img_path;
+				document.getElementById("table-title_0").textContent = "你是誰? (User1/User2)";
 			}
 		}
 
@@ -309,7 +310,7 @@
 			else if (document.getElementById("img_ans3").alt != "start") {}
 			else
 			{
-				var curr_url = ""; //location.hostname + location.pathname;
+				var curr_url = "";  //location.hostname + location.pathname;
 				var next_url = curr_url + "?l_idx=" + String(deck_index_l) + "&h_idx=" + String(deck_index_h) 
 										+ "&al_idx=" + String(ans_idx_l*7) + "&ah_idx=" + String(ans_idx_h*7)
 										+ "&user=" + String(idx);
@@ -475,7 +476,7 @@
 			if (is_mode_chg == false) 
 			{
 				InsertImg(3);
-				document.getElementById("my_ans").textContent = "我的答案";
+				document.getElementById("my_ans").textContent = "( ˊᴗˋ )";
 				document.getElementById("img_ans3").src = default_img_path;
 				document.getElementById("img_ans3").alt = "start";
 				UnImg(0);
