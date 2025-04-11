@@ -70,11 +70,11 @@
 				</div>
 				<td>
 					<text id="user1_ans"></text><!--User2 Answer-->
-					<div id="ans2"><img id="img_ans1"></img></div>
+					<div id="ans2"><!--<img id="img_ans1"></img>--></div>
 				</td>
 				<td>
 					<text id="user2_ans"></text><!--User1 Answer-->
-					<div id="ans1"><img id="img_ans2"></img></div>
+					<div id="ans1"><!--<img id="img_ans2"></img>--></div>
 				</td>
 			</tr>
 		</table>
@@ -108,6 +108,26 @@
 		
 		
 		
+		function SelectInnocent(idc)
+		{
+			if ((idc/(round_row*round_col) < 3))
+			{
+				var id_str = "img" + String(idc);
+				var get_img = document.getElementById(id_str);
+				
+				if (get_img.alt == "Sus")
+				{
+					get_img.style.opacity = '0.25';
+					get_img.alt = "Innocent";
+				}
+				else 
+				{
+					get_img.style.opacity = '1';
+					get_img.alt = "Sus";
+				}
+			}
+		}
+		
 		function createTable(idx) 
 		{
 			if (idx == 0) var container = document.getElementById('table-container_my');
@@ -120,23 +140,26 @@
 			text.id = "table-title_" + String(idx);
 			container.appendChild(text);
 
-			for (var i = 0; i < round_col; i++) 
+			for (cnt = 0; cnt < round_col; cnt ++) 
 			{
 				var tr = document.createElement('tr');
-				for (var j = 0; j < round_row; j++) 
+				for (count = 0; count < round_row; count ++) 
 				{
 					var td = document.createElement('td');
 					td.id = idCounter;  // 設定每個單元格的 ID
 					//td.textContent = idCounter;  // 顯示 ID 編號
+					
 					var img = document.createElement('img');
 					img.id = "img" + String(idCounter);
+					//img.alt = "Sus";
+					img.setAttribute('onclick', 'SelectInnocent('+idCounter+')');
 					if ((idx == 0) || (idx == 3)) td.appendChild(img);
+					
 					tr.appendChild(td);
 					idCounter ++;
 				}
 				table.appendChild(tr);
 			}
-
 			container.appendChild(table);
 		}
 		
@@ -220,6 +243,7 @@
 				var table_block = document.getElementById(img_id_str);
 				table_block.textContent = target_arr[cnt];
 				table_block.src = target_arr[cnt];
+				table_block.alt = "Sus";
 			}
 			//debug_str += "<br>";
 			//document.getElementById("debug_str").innerHTML = debug_str;
@@ -269,7 +293,7 @@
 			if ((deck_index_l == 0) && (deck_index_h == 0)){}
 			else
 			{
-				var curr_url = ""; //location.hostname + location.pathname;
+				var curr_url = "";   //location.hostname + location.pathname;
 				var next_url = curr_url + "?l_idx=" + String(deck_index_l) + "&h_idx=" + String(deck_index_h) 
 										+ "&al_idx=" + String(ans_idx_l*7) + "&ah_idx=" + String(ans_idx_h*7)
 										+ "&user=" + String(idx);
